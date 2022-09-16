@@ -5,16 +5,16 @@ public partial class GameManager
     [System.Serializable]
     private class LevelProperty
     {
-        [SerializeField] private float _slimeSpeed;
-        [SerializeField] private Transform _decorContenetor;
+        [SerializeField] private float _slimeSpeed; // Velocidad del enemigo
+        [SerializeField] private Transform _decorContenetor; // Contenedor de las decoraciones
 
         [Header("Camera Properties")]
-        [SerializeField] private Vector3 _camPosition;
-        [SerializeField] private float _camSize;
+        [SerializeField] private Vector3 _camPosition; // Posición de la cámar
+        [SerializeField] private float _camSize; // Zoom de la cámara
 
         [Header("Grid")]
-        [SerializeField] private int _mazeWidth; 
-        [SerializeField] private int _mazeHeight; 
+        [SerializeField] private int _mazeWidth; // Ancho del laberinto
+        [SerializeField] private int _mazeHeight; // Alto del laberinto
 
         public float SlimeSpeed { get => _slimeSpeed; }
 

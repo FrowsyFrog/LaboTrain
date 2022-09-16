@@ -53,6 +53,7 @@ public partial class GameManager : MonoBehaviour
         Instance = this;
     }
 
+    // Colocar la configuración inicial del juego. Además obtiene referencias para diferentes variables
     void Start()
     {
         Application.targetFrameRate = 60;
@@ -68,6 +69,7 @@ public partial class GameManager : MonoBehaviour
         SetScreen();
     }
 
+    // Intercambiar resolución entre pantalla completa y modo ventana
     public void TriggerWindows()
     {
         _isFullscreen = !_isFullscreen;
@@ -81,7 +83,7 @@ public partial class GameManager : MonoBehaviour
         _screenMode.text = _shadowScreenMode.text = _isFullscreen ? "Pantalla\nCompleta" : "Modo\nVentana";
     }
 
-
+    // Una vez el jugador colisiona con el cofre, esta función es llamada
     public void EndWinPlayer()
     {
         if (_levelEnded) return;
@@ -111,6 +113,7 @@ public partial class GameManager : MonoBehaviour
 
     }
 
+    // Una vez el enemigo haya llegado a su último nodo, esta función es llamdada, indicando que el jugador ha perdido
     public void EndWinEnemy()
     {
         if (_levelEnded) return;
@@ -123,6 +126,7 @@ public partial class GameManager : MonoBehaviour
         _audioManager.PlayLevelLose();
     }
 
+    // Se llama al momento que se presiona el botón de ir al menú
     public void ResetGoMenu()
     {
         if (_reshowingObjects) return;
@@ -141,6 +145,7 @@ public partial class GameManager : MonoBehaviour
         _currentLevel = 0;
     }
 
+    // Activa diferentes objetos para el inicio del juego
     public void StartGame()
     {
         if (_inGame) return;
@@ -170,10 +175,13 @@ public partial class GameManager : MonoBehaviour
         _player.EnablePlayerCollider(true);
     }
 
+    // Función llamada al empezar el juego o al resetar un nivel
     public void NextLevel()
     {
         if (_editingCamera) return;
 
+        // Si es que existe un camino, significa que no es la primera vez que el jugador ha creado un mapa,
+        // por lo que debe borrarse el antiguo mapa y resetear diferentes variables
         if (_gridManager.ExistsPath) {
             _chestAnim.SetBool("open", false);
             _nextLevelPanel.SetBool("hide", true);;
@@ -181,7 +189,7 @@ public partial class GameManager : MonoBehaviour
             _levelEnded = false;
         }
 
-        //Change camera properties and world decorations
+        //Cambiar las propiedades de la cámara y la decoración del mundo
         if(_levelProperties[_currentLevel].DecorContenetor != null)
         {
             StartCoroutine(IHideDecorObjects(_currentLevel));
@@ -190,9 +198,11 @@ public partial class GameManager : MonoBehaviour
 
         _levelProperties[_currentLevel].GetMazeSizes(out int Width, out int Height);
 
+        // Generar y pintar el mapa en la escena
         _gridManager.GenerateMap(Width, Height);
         _gridManager.PaintMap();
 
+        // Colocar el jugador y enemigo en sus respectivas posiciones. Además, si estaban muertos, reviven.
         _player.ReviveEntity(false, new Vector2(1, Height - 2.5f));
         _enemyHandler.ReviveEntity(true, new Vector2(Width - 2, 1));
 
@@ -206,6 +216,7 @@ public partial class GameManager : MonoBehaviour
         _curLevel.text = _shadowCurLevel.text = $"Nivel: {_currentLevel} - {_levelProperties.Count}";
     }
 
+    // Corrutina para ocultar progresivamente objetos que están en el espacio del laberinto
     IEnumerator IHideDecorObjects(int decorIndex)
     {
         foreach(Transform decoration in _levelProperties[decorIndex].DecorContenetor)
@@ -214,8 +225,9 @@ public partial class GameManager : MonoBehaviour
             yield return new WaitForSecondsRealtime(_dissapearRate);
         }
         _levelProperties[decorIndex].DecorContenetor.gameObject.SetActive(false);
-    } 
+    }
 
+    // Corrutina para mostrar progresivamente objetos que fueron ocultados
     IEnumerator IShowDecorObjects(int decorIndex)
     {
         _reshowingObjects = true;
@@ -233,7 +245,7 @@ public partial class GameManager : MonoBehaviour
         _reshowingObjects = false;
     }
 
-
+    // Corrutina para editar el zoom y posición de la cámara tras el paso de niveles
     IEnumerator IEditCamera()
     {
         _editingCamera = true;

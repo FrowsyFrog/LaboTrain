@@ -15,11 +15,15 @@ public class EnemyMovement : EntityMovement
         HandleMovement();
     }
 
+    // Función que permite moverse al enemigo
     private void HandleMovement()
     {
+        // Si es que no tiene algún camino establecido por el algoritmo de pathfinding, no se mueve
         if(_pathVectorList != null)
         {
             Vector3 TargetPosition = _pathVectorList[_currentPathIndex] + _targetOffset;
+
+            // Existe un radio mínimo que el enemigo debe estar a un nodo para pasar al siguiente
             if(Vector3.Distance(transform.position, TargetPosition) > _enemyRadius)
             {
                 Vector3 MoveDir = (TargetPosition - transform.position).normalized;
@@ -36,7 +40,7 @@ public class EnemyMovement : EntityMovement
                 {
                     _pathVectorList = null;
                     _animator.SetBool("isWalking", false);
-                    //End path
+                    //Fin del camino
                     GameManager.Instance.EndWinEnemy();
                 }
             }
@@ -47,6 +51,7 @@ public class EnemyMovement : EntityMovement
         }
     }
 
+    // Establecer posición que el enemigo debe llegar haciendo uso del pathfinding
     public void SetTargetPosition(Vector3 targetPosition)
     {
         _currentPathIndex = 0;
@@ -60,6 +65,7 @@ public class EnemyMovement : EntityMovement
     public override void KillEntity()
     {
         base.KillEntity();
+        // Se elimina el camino que recorría el enemigo para que deje de moverse
         _pathVectorList = null;
     }
 

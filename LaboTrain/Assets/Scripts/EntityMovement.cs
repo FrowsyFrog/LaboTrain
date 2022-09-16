@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+// Clase padre de la que hereda el movimiento del enemigo y jugador
 public class EntityMovement : MonoBehaviour
 {
     [SerializeField] protected Animator _animator;
@@ -11,6 +12,7 @@ public class EntityMovement : MonoBehaviour
     public bool CanMove { set => _canMove = value; }
     public float MoveSpeed { set => _moveSpeed = value; }
 
+    // Reflejar sprite de la entidad hacia la izquierda
     public void LookLeft(bool left)
     {
         _entityRenderer.flipX = left;

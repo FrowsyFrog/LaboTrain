@@ -25,6 +25,7 @@ public class PathFinding
         _grid = new Grid<PathNode>(width, height, 1f, Vector3.zero, (int x, int y) => new PathNode(x, y));
     }
 
+    // Devuelve la lista de nodos que conformar el camino del inicio al final según el tamaño del escenario de juego
     public List<Vector3> FindPath(Vector3 startWorldPosition, Vector3 endWorldPosition)
     {
         _grid.GetXY(startWorldPosition, out int startX, out int startY);
@@ -42,6 +43,7 @@ public class PathFinding
         }
     }
 
+    // Devuelve la lista de nodos que conformar el camino del inicio al final en el grid
     public List<PathNode> FindPath(int startX, int startY, int endX, int endY)
     {
         PathNode StartNode = _grid.GetValue(startX, startY);
@@ -50,6 +52,7 @@ public class PathFinding
         _openList = new List<PathNode>() { StartNode};
         _closedList = new List<PathNode>();
 
+        // Establecer todos los nodos en el grid con valores por defecto
         for(int x = 0;  x < _grid.Width; ++x)
         {
             for(int y = 0; y < _grid.Height; ++y)
@@ -61,19 +64,19 @@ public class PathFinding
             }
         }
 
+        // Establecer valor del primer nodo
         StartNode.GCost = 0;
         StartNode.HCost = CalculateDistanceCost(StartNode, EndNode);
         StartNode.CalculateFCost();
 
+        // Mientras hayan nodos a revisar
         while(_openList.Count > 0)
         {
             PathNode CurrentNode = GetLowestFCostNode(_openList);
-            if(CurrentNode == EndNode)
-            {
-                //Nodo final alcanzado
-                return CalculatePath(EndNode);
-            }
+            // Si el nodo actual es el alcanzado, retornar el camino hasta llegar
+            if(CurrentNode == EndNode) return CalculatePath(EndNode);
 
+            // Cambiar el nodo de lista al ya ser revisado
             _openList.Remove(CurrentNode);
             _closedList.Add(CurrentNode);
 
@@ -81,16 +84,19 @@ public class PathFinding
             foreach(PathNode neighbourNode in GetNeighbourList(CurrentNode)){
                 // Revisar si el nodo vecino se encuentra en la closedList, lo que significa que ya la hemos revisado
                 if (_closedList.Contains(neighbourNode)) continue;
+                // Si el nodo no es un camino, añadirlo a la closedList y pasar al siguiente vecino
                 if (!neighbourNode.IsWalkable)
                 {
                     _closedList.Add(neighbourNode);
                     continue;
                 }
 
+                // Si el costo del nodo actual de llegada (G Cost) es menor al que actualmente tiene el vecino
+                // Ese será el siguiente nodo
                 int tentativeGCost = CurrentNode.GCost + CalculateDistanceCost(CurrentNode, neighbourNode);
                 if(tentativeGCost < neighbourNode.GCost)
                 {
-                    neighbourNode.Parent = CurrentNode;
+                    neighbourNode.Parent = CurrentNode; // Se coloca de padre al actual para saber de cual viene
                     neighbourNode.GCost = tentativeGCost;
                     neighbourNode.HCost = CalculateDistanceCost(neighbourNode, EndNode);
                     neighbourNode.CalculateFCost();
@@ -100,7 +106,6 @@ public class PathFinding
             }
 
         }
-
         // Sin nodos en la openList, por lo que no logramos encontrar el camino
         return null;
     }
@@ -149,6 +154,7 @@ public class PathFinding
         return MOVE_DIAGONAL_COST * Mathf.Min(XDistance, YDistance) + MOVE_STRAIGHT_COST * RemainingDistance;
     }
 
+    // Obtener nodo de menor F Cost
     private PathNode GetLowestFCostNode(List<PathNode> pathNodeList)
     {
         PathNode LowestFCostNode = pathNodeList[0];

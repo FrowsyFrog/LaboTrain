@@ -5,15 +5,19 @@ using System.Collections;
 
 public class MazeGenerator : MonoBehaviour
 {
-    [SerializeField] private int _separation;
+    // Separación entre los caminos en el laberinto.
+    // Se puede entender como el ancho de las paredes
+    [SerializeField] private int _separation; 
 
     [Header("Map Tile")]
-    [SerializeField] private Tilemap _tileMap;
-    [SerializeField] private Tilemap _fenceTileMap;
-    [SerializeField] private RuleTile _pathTile;
-    [SerializeField] private RuleTile _fenceTile;
-    [SerializeField] private RuleTile _decorTile;
-    [SerializeField] private RuleTile _randomObsTile;
+    [SerializeField] private Tilemap _tileMap; // Tilemap para los sprites del suelo
+    [SerializeField] private Tilemap _fenceTileMap; //Tilemap para los sprites de las paredes
+
+    // Los RuleTiles son sprites que cambian su diseño según cual sprite está a su alrededor
+    [SerializeField] private RuleTile _pathTile; // Sprites de camino
+    [SerializeField] private RuleTile _fenceTile; // Sprites de paredes
+    [SerializeField] private RuleTile _decorTile; // Sprites de decoraciones en el suelo
+    [SerializeField] private RuleTile _randomObsTile; // Sprites de decoraciones en las paredes
 
     [Header("Probabilities")]
     [Tooltip("Cuanto mayor sea el porcentaje, más complicado será para tiles en el camino aparecer")]
@@ -22,7 +26,7 @@ public class MazeGenerator : MonoBehaviour
     [SerializeField] private float _maxProbForRandomObs;
 
     [Header("Sounds")]
-    [SerializeField] private List<AudioClip> _putFenceClips;
+    [SerializeField] private List<AudioClip> _putFenceClips; // Sonido al ser colocado una pared
 
     private AudioSource _audioSource;
     private Grid<PathNode> _grid;
@@ -47,10 +51,12 @@ public class MazeGenerator : MonoBehaviour
         PathNode StartNode = _grid.GetValue(1, 1);
         StartNode.IsWalkable = true;
         _stackNodes.Push(StartNode); // Se le otorga un valor inicial
+        // Generar laberinto mediante backtracking
         GeneratePath(1);
+        // Se elimina dos esquinas del laberinto para la entrada y salida
         DeleteCorners();
     }
-    // Generar laberinto mediante backtracking
+
     private void GeneratePath(int visitated)
     {
         if (visitated < _width / _separation * _height / _separation && _stackNodes.Count > 0)
@@ -119,7 +125,7 @@ public class MazeGenerator : MonoBehaviour
                 GeneratePath(visitated);
         }
     }
-
+ 
     private void DeleteCorners()
     {
         _grid.GetValue(0, _height - 1).IsWalkable = 
@@ -127,18 +133,21 @@ public class MazeGenerator : MonoBehaviour
         _grid.GetValue(1, _height - 1).IsWalkable =
         _grid.GetValue(_width - 1, 1).IsWalkable = true;
     }
+
+    // Corrutina para pintar el laberinto
     public IEnumerator IPaintPath()
     {
-
         while (_isErasingPart) yield return null;
         int counter = 0;
         for (int x = 0; x < _width; ++x)
         {
             for (int y = 0; y < _height; ++y)
             {
-                float RandomTile = Random.Range(0f, 100f);
+                // Verificar si el nodo es un camino o es una pared
                 if (_grid.GetValue(x, y).IsWalkable)
                 {
+                    // Aleatoriamente colocar ningún sprite, un camino, o una decoración
+                    float RandomTile = Random.Range(0f, 100f);
                     if (RandomTile > _minProbToAppear)
                     {
                         if (RandomTile < _maxProbForDecorTile)
@@ -152,18 +161,29 @@ public class MazeGenerator : MonoBehaviour
                     }
                     continue;
                 }
-                if(++counter % 4 == 0) _audioSource.PlayOneShot(_putFenceClips[Random.Range(0, _putFenceClips.Count)]);
 
+                // Cada 4 paredes colocadas, que se reproduzca un sonido
+                if(++counter % 4 == 0) _audioSource.PlayOneShot(_putFenceClips[Random.Range(0, _putFenceClips.Count)]);
+                // Colocar sprite de pared 
                 _fenceTileMap.SetTile(new Vector3Int(x, y), Random.Range(0f, 100f) > _maxProbForRandomObs ? _fenceTile : _randomObsTile);
+                // Esperar 0.01 segundo para la siguiente iteración
                 yield return new WaitForSecondsRealtime(0.01f);
             }
         }
+        // Una vez terminada la colocación del camino y pared, empezar juego
         GameManager.Instance.StartLevel();
     }
 
+    // Corrutina para borrar el laberinto
     public IEnumerator IErasePath()
     {
-        _isErasingPart = _isErasing = true;
+        // Indica cuando la tercera parte del laberinto ha sido borrada.
+        // Esto para la generación del siguiente no demore tanto
+        _isErasingPart = true;
+        // Indica cuando todo el laberinto ha sido borrado
+        _isErasing = true;
+
+        // Ancho y alto del laberinto actual por si se actualiza en medio de la corrutina
         int CurWidth = _width;
         int CurHeight = _height;
 
@@ -173,7 +193,7 @@ public class MazeGenerator : MonoBehaviour
             {
                 _tileMap.SetTile(new Vector3Int(x, y), null);
                 _fenceTileMap.SetTile(new Vector3Int(x, y), null);
-
+                // Esperar 0.01 segundo para la siguiente iteración
                 if (x % 3 == 0) yield return new WaitForSecondsRealtime(0.01f);
             }
             if (x > CurWidth / 3) _isErasingPart = false;

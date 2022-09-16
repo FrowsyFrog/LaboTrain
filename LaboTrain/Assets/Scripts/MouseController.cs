@@ -21,6 +21,7 @@ public class MouseController : MonoBehaviour
         _mouseTransform.position = Input.mousePosition;
     }
 
+    // Cambiar sprite del mouse cuando está encima de un botón
     public void MouseHover(bool hover)
     {
         _image.sprite = _mouseSprites[hover ? 1 : 0];
