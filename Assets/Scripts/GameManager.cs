@@ -64,7 +64,7 @@ public partial class GameManager : MonoBehaviour
         _isFullscreen = Screen.fullScreen;
 
         Resolution[] Resolutions = Screen.resolutions.Select(resolution => new Resolution { width = resolution.width, height = resolution.height }).Distinct().ToArray();
-        _windowedResolution = Resolutions[Resolutions.Length - 4];
+        _windowedResolution = Resolutions[Resolutions.Length - 2];
         _fullscreenResolution = Resolutions[Resolutions.Length - 1];
         SetScreen();
     }
